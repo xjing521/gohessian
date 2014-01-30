@@ -6,14 +6,20 @@ import (
   "io"
   "log"
   //  "strings"
+  "runtime"
   "time"
 )
+
+/*
+对 Hessian 数据进行解码
+*/
 
 type Parser interface {
 }
 
 func init() {
-  log.SetPrefix("parse.go >> ")
+  _, filename, _, _ := runtime.Caller(1)
+  log.SetPrefix(filename+"\n")
 }
 
 func NewHessian(r io.Reader) (h *Hessian) {
@@ -162,7 +168,7 @@ func (h *Hessian) Parse() (v interface{}, err error) {
 
   case 'V': //list
     h.read_type() //TODO 类型怎么用?
-    var list_chunks []interface{}
+    var list_chunks []Any
     if h.peek_byte() == 'l' {
       h.next(5)
     }
@@ -177,7 +183,7 @@ func (h *Hessian) Parse() (v interface{}, err error) {
 
   case 'M': //map
     h.read_type() //TODO 类型怎么用?
-    var map_chunks = make(map[interface{}]interface{})
+    var map_chunks = make(map[Any]Any)
     for h.peek_byte() != 'z' {
       _kv, _ke := h.Parse()
       _vv, _ve := h.Parse()

@@ -6,13 +6,15 @@ import (
   "reflect"
   "testing"
   "time"
+  "runtime"
 )
 
 var data *bytes.Buffer
 var REPLY []byte = []byte{114, 1, 0}
 
 func init() {
-  log.Println("init....")
+  _, filename, _, _ := runtime.Caller(1)
+  log.SetPrefix(filename+"\n")
 }
 
 func Test_parse_binary(t *testing.T) {
@@ -218,7 +220,7 @@ func Test_parse_list_without_type(t *testing.T) {
   data = bytes.NewBuffer(b)
   h := NewHessian(bytes.NewReader(data.Bytes()))
   v, err := h.Parse()
-  var list_check []interface{}
+  var list_check []Any
   if reflect.TypeOf(v) != reflect.TypeOf(list_check) {
     t.Fatalf("want []interface {} type,but got %v", reflect.TypeOf(v))
   }
@@ -236,7 +238,7 @@ func Test_parse_list_with_type(t *testing.T) {
   data = bytes.NewBuffer(b)
   h := NewHessian(bytes.NewReader(data.Bytes()))
   v, err := h.Parse()
-  var list_check []interface{}
+  var list_check []Any
   if reflect.TypeOf(v) != reflect.TypeOf(list_check) {
     t.Fatalf("want []interface {} type,but got %v", reflect.TypeOf(v))
   }
@@ -254,9 +256,9 @@ func Test_parse_map(t *testing.T) {
   h := NewHessian(bytes.NewReader(data.Bytes()))
   v, err := h.Parse()
 
-  var map_check map[interface{}]interface{}
+  var map_check map[Any]Any
   if reflect.TypeOf(v) != reflect.TypeOf(map_check) {
-    t.Fatalf("want map[interface {}]interface {} type,but got %v", reflect.TypeOf(v))
+    t.Fatalf("want map[Any]Any type,but got %v", reflect.TypeOf(v))
   }
   if err != nil {
     t.Fatalf("error: %v", err)
