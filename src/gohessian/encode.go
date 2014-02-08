@@ -3,9 +3,14 @@ package gohessian
 import (
   "bytes"
   "log"
-  "reflect"
+  // "math"
+  // "reflect"
   "runtime"
+  "strings"
   "time"
+  "unicode/utf8"
+  // "encoding/binary"
+  "strconv"
 )
 
 /*
@@ -25,7 +30,7 @@ type Encoder struct {
 }
 
 const (
-  CHUNK_SIZE = 0xffff
+  CHUNK_SIZE = 0x8000
 )
 
 func init() {
@@ -34,35 +39,37 @@ func init() {
 }
 
 func Encode(v interface{}) (b []byte, err error) {
-  //TODO nil 值需要特殊处理,建一个叫 null 的数据类型处理,避免其他值是 nil 的时候造成困扰
-  if v == nil {
-    b, err = encode_null(v)
-    return
-  }
 
-  t := reflect.ValueOf(v)
-  log.Println("detect type", t.Type())
-  switch t.Type() {
+  switch v.(type) {
 
-  case reflect.TypeOf(true):
-    b, err = encode_bool(v.(bool))
-
-  case reflect.TypeOf([]byte{0}):
+  case []byte:
     b, err = encode_binary(v.([]byte))
 
-  case reflect.TypeOf(float64(0)):
+  case bool:
+    b, err = encode_bool(v.(bool))
+
+  case time.Time:
+    b, err = encode_time(v.(time.Time))
+
+  case float64:
     b, err = encode_float64(v.(float64))
 
-  case reflect.TypeOf(int32(0)):
+  case int32:
     b, err = encode_int32(v.(int32))
 
-  case reflect.TypeOf(int64(0)):
+  case int64:
     b, err = encode_int64(v.(int64))
 
-  case reflect.TypeOf(time.Now()):
-    b, err = encode_time(v.(time.Time))
+  case string:
+    b, err = encode_string(v.(string))
+
+  case nil:
+    b, err = encode_null(v)
+
+  default:
+    panic("unknow type")
   }
-  log.Println(b)
+  log.Println(">>>>encode bytes: ", b)
   return
 }
 
@@ -177,7 +184,7 @@ func encode_time(v time.Time) (b []byte, err error) {
 //   value = (double)b0
 //
 // 压缩格式：short型double
-//   介于-32768.0和32767.0之间的无小数位的double型可以用
+//   介于 -32768.0 和 32767.0 (16位)之间的无小数位的double型可以用
 //    三个十六进制数来表示，也即相当于一个short值转换成double:
 //   value=(double)(256*b1 + b0)
 //
@@ -194,16 +201,38 @@ func encode_time(v time.Time) (b []byte, err error) {
 //
 //   x70 x00 x00    # 0.0
 //   x70 x80 x00    # -32768.0
-//   x70 xff xff      # 32767.0
+//   x70 x7f xff      # 32767.0
 //
 //   D x40 x28 x80 x00 x00 x00 x00 x00    # 12.25
 func encode_float64(v float64) (b []byte, err error) {
   if v == float64(0.0) { // 压缩格式标示 0.0
-    b = append(b, 'g')
+    b = append(b, 0x67)
     return
   }
   if v == float64(1.0) { // 压缩格式标示 1.0
-    b = append(b, 'h')
+    b = append(b, 0x68)
+    return
+  }
+  // 判断传入的值是否有小数
+  //有小数点返回       true
+  //没有小数点否则返回 false
+  hr := func(v float64) bool {
+    if strings.IndexByte(strconv.FormatFloat(v, 'G', 100, 64), '.') == -1 { //没有小数点
+      return false
+    }
+    return true
+  }
+
+  if !hr(v) { //没有小数位,使用压缩格式进行编码
+    var bts []byte
+    if v >= -128 && v <= 127 { // 0x69 单字节编码,0x00~0x79表示正数，0x80~0xFF表示负数
+      bts, err = pack_int8(int8(v))
+      b = append(b, 0x69)
+    } else if v >= -32768 && v <= 32767 { // 0x70,short double  表示
+      bts, err = pack_int16(int16(v))
+      b = append(b, 0x70)
+    }
+    b = append(b, bts...)
     return
   }
 
@@ -251,9 +280,27 @@ func encode_float64(v float64) (b []byte, err error) {
 //   I x00 x00 x00 x00  # 0
 //   I x00 x00 x01 x2c  # 300
 func encode_int32(v int32) (b []byte, err error) {
-  b = append(b, 'I')
-  tmp_v, err := pack_int32(v)
-  b = append(b, tmp_v...)
+  var tmp_v []byte
+  switch {
+
+  case v >= -16 && v <= 47: //单字节整型
+    b = append(b, byte(v+0x90))
+
+  case v >= -2048 && v <= 2047: //双字节整型
+    tmp_v, err = pack_int16(int16(v))
+    tmp_v[0] += 0xc8
+    b = append(b, tmp_v...)
+
+  case v >= -262144 && v <= 262143: //三字节整型
+    tmp_v, err = pack_int16(int16(v))
+    b = append(b, byte(v>>16+0xd4)) // code,右移16位,相当于除以 65536
+    b = append(b, tmp_v...)
+
+  default:
+    b = append(b, 'I')
+    tmp_v, err = pack_int32(v)
+    b = append(b, tmp_v...)
+  }
   return
 }
 
@@ -335,12 +382,54 @@ func encode_null(v interface{}) (b []byte, err error) {
 // 字符串实例
 //   x00        # "", 空字符串
 //   x05 hello      # "hello"
-//   x01 xc3 x83    # "\u00c3"
+//   x01 xc3 x83    # "\u00c3" Ã
 //
 //   S   x00 x05 hello  # 长字符串格式的"hello"
 //   s   x00 x07 hello,  # "hello, world"被分割成两个chunk
 //       X05 world
-func encode_string(v interface{}) (b []byte, err error) {
+func encode_string(v string) (b []byte, err error) {
+  if v == "" {
+    b = append(b, 0)
+    return
+  }
+  var (
+    len_b []byte
+    s_buf = *bytes.NewBufferString(v)
+    r_len = utf8.RuneCountInString(v)
+
+    s_chunk = func(_len int) {
+      for i := 0; i < _len; i++ {
+        if r, s, err := s_buf.ReadRune(); s > 0 && err == nil {
+          b = append(b, []byte(string(r))...)
+        }
+      }
+    }
+  )
+
+  if r_len < 32 {
+    len_b, err = pack_int8(int8(r_len))
+    b = append(b, len_b...)
+    b = append(b, s_buf.Bytes()...)
+    return
+  }
+
+  for {
+    r_len = utf8.RuneCount(s_buf.Bytes())
+    if r_len == 0 {
+      break
+    }
+    if r_len > CHUNK_SIZE {
+      len_b, err = pack_uint16(uint16(CHUNK_SIZE))
+      b = append(b, 's')
+      b = append(b, len_b...)
+      s_chunk(CHUNK_SIZE)
+    } else {
+      len_b, err = pack_uint16(uint16(r_len))
+      b = append(b, 'S')
+      b = append(b, len_b...)
+      s_chunk(r_len)
+    }
+  }
   return
 }
 

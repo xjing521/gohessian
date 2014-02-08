@@ -1,12 +1,9 @@
 package gohessian
 
-
 import (
-    "bytes"
-    "encoding/binary"
+  "bytes"
+  "encoding/binary"
 )
-
-
 
 func pack_int8(v int8) (r []byte, err error) {
   buf := new(bytes.Buffer)
@@ -73,53 +70,47 @@ func pack_float64(v float64) (r []byte, err error) {
   return
 }
 
-
-
 //(0,2).unpack('n')
 func unpack_int16(b []byte) (pi int16, err error) {
-    err = binary.Read(bytes.NewReader(b), binary.BigEndian, &pi)
-    if err != nil {
-        return
-    }
+  err = binary.Read(bytes.NewReader(b), binary.BigEndian, &pi)
+  if err != nil {
     return
+  }
+  return
 }
 
 //unpack('an')
 func unpack_aint16(b []byte) (pi int16, err error) {
-    err = binary.Read(bytes.NewReader(b[1:3]), binary.BigEndian, &pi)
-    if err != nil {
-        return
-    }
+  err = binary.Read(bytes.NewReader(b[1:3]), binary.BigEndian, &pi)
+  if err != nil {
     return
+  }
+  return
 }
 
 //(0,4).unpack('N')
 func unpack_int32(b []byte) (pi int32, err error) {
-    err = binary.Read(bytes.NewReader(b), binary.BigEndian, &pi)
-    if err != nil {
-        return
-    }
+  err = binary.Read(bytes.NewReader(b), binary.BigEndian, &pi)
+  if err != nil {
     return
+  }
+  return
 }
 
 //long (0,8).unpack('q>')
 func unpack_int64(b []byte) (pi int64, err error) {
-    err = binary.Read(bytes.NewReader(b), binary.BigEndian, &pi)
-    if err != nil {
-        return
-    }
+  err = binary.Read(bytes.NewReader(b), binary.BigEndian, &pi)
+  if err != nil {
     return
+  }
+  return
 }
 
 //Double (0,8).unpack('G)
 func unpack_float64(b []byte) (rs float64, err error) {
-    err = binary.Read(bytes.NewReader(b), binary.BigEndian, &rs)
-    if err != nil {
-        return
-    }
+  err = binary.Read(bytes.NewReader(b), binary.BigEndian, &rs)
+  if err != nil {
     return
+  }
+  return
 }
-
-
-
-
