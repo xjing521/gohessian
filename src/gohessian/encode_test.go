@@ -18,7 +18,8 @@ func init() {
 
 func Test_001(t *testing.T) {
   log.Println("================")
-  //Encode("新年好新年好新年好新年好新年好新年好新年好新年好新年好新年好新年好新年好新年好新年好新年好新年好新年好新年好新年好新年好")
+  // Encode("新年好新年好新年好新年好新年好新年好新年好新年好新年好新年好新年好新年好新年好新年好新年好新年好新年好新年好新年好新年好")
+  // Encode("")
   //log.Println(pack_int8(int8(13)))
   //Encode("")
   // Encode(time.Now())
@@ -91,7 +92,34 @@ func Test_001(t *testing.T) {
   //   Encode(int32(-256))
   //   Encode(int32(2047))
 
-  Encode(int32(0))
-  Encode(int32(-262144))
-  Encode(int32(262143))
+  // Encode(int32(0))
+  // Encode(int32(-262144))
+  // Encode(int32(262143))
+
+  // Encode(int64(0))
+  //   Encode(int64(-8))
+  //   Encode(int64(15))
+  // Encode(int64(0))
+  //   Encode(int64(-2048))
+  //   Encode(int64(-256))
+  //   Encode(int64(2047))
+
+  // Encode(int64(0))
+  //   Encode(int64(-262144))
+  //   Encode(int64(262143))
+  //
+  // Encode(int64(0))
+  // Encode(int64(300))
+  // Encode(int64(-300))
+  //list := []Any{"你好",int64(99999999), int32(100), float64(10.01), true, false, []byte{0, 1, 2, 3, 4, 5} }
+
+  //Encode(list)
+
+  var hmap = make(map[Any]Any)
+  hmap["你好"] = "哈哈哈"
+  hmap[int32(100)] = "嘿嘿"
+  hmap[float64(100.1010)] = int32(101910)
+  hmap[true] = true
+  hmap[false] = true
+  Encode(hmap)
 }
