@@ -119,11 +119,11 @@ func encode_binary(v []byte) (b []byte, err error) {
   for r_buf.Len() > 0 {
     if r_buf.Len() > CHUNK_SIZE {
       tag = 'b'
-      len_b, err = pack_uint16(uint16(CHUNK_SIZE))
+      len_b, err = util.PackUint16(uint16(CHUNK_SIZE))
       len_n = CHUNK_SIZE
     } else {
       tag = 'B'
-      len_b, err = pack_uint16(uint16(r_buf.Len()))
+      len_b, err = util.PackUint16(uint16(r_buf.Len()))
       len_n = r_buf.Len()
     }
     b = append(b, tag)
@@ -157,7 +157,7 @@ func encode_bool(v bool) (b []byte, err error) {
 //   D x00 x00 xd0 x4b x92 x84 xb8  #2:51:31 May 8, 1998 UTC
 func encode_time(v time.Time) (b []byte, err error) {
   b = append(b, 'd')
-  tmp_v, err := pack_int64(v.UnixNano() / 1000000)
+  tmp_v, err := util.PackInt64(v.UnixNano() / 1000000)
   b = append(b, tmp_v...)
   return
 }
@@ -226,10 +226,10 @@ func encode_float64(v float64) (b []byte, err error) {
   if !hr(v) { //没有小数位,使用压缩格式进行编码
     var bts []byte
     if v >= -128 && v <= 127 { // 0x69 单字节编码,0x00~0x79表示正数，0x80~0xFF表示负数
-      bts, err = pack_int8(int8(v))
+      bts, err = util.PackInt8(int8(v))
       b = append(b, 0x69)
     } else if v >= -32768 && v <= 32767 { // 0x70,short double  表示
-      bts, err = pack_int16(int16(v))
+      bts, err = util.PackInt16(int16(v))
       b = append(b, 0x70)
     }
     b = append(b, bts...)
@@ -237,7 +237,7 @@ func encode_float64(v float64) (b []byte, err error) {
   }
 
   b = append(b, 'D')
-  tmp_v, err := pack_float64(v)
+  tmp_v, err := util.PackFloat64(v)
   b = append(b, tmp_v...)
   return
 }
@@ -291,18 +291,18 @@ func encode_int32(v int32) (b []byte, err error) {
     b = append(b, byte(v+0x90))
 
   case v >= -2048 && v <= 2047: //双字节整型
-    tmp_v, err = pack_int16(int16(v))
+    tmp_v, err = util.PackInt16(int16(v))
     tmp_v[0] += 0xc8
     b = append(b, tmp_v...)
 
   case v >= -262144 && v <= 262143: //三字节整型
-    tmp_v, err = pack_int16(int16(v))
+    tmp_v, err = util.PackInt16(int16(v))
     b = append(b, byte(v>>16+0xd4)) // code,右移16位,相当于除以 65536
     b = append(b, tmp_v...)
 
   default:
     b = append(b, 'I')
-    tmp_v, err = pack_int32(v)
+    tmp_v, err = util.PackInt32(v)
     b = append(b, tmp_v...)
   }
   return
@@ -360,23 +360,23 @@ func encode_int64(v int64) (b []byte, err error) {
     b = append(b, byte(v+0xe0))
 
   case v >= -2048 && v <= 2047: //双字节压缩
-    tmp_v, err = pack_int16(int16(v))
+    tmp_v, err = util.PackInt16(int16(v))
     tmp_v[0] += 0xf8
     b = append(b, tmp_v...)
 
   case v >= -262144 && v <= 262143: //三字节压缩
-    tmp_v, err = pack_int16(int16(v))
+    tmp_v, err = util.PackInt16(int16(v))
     b = append(b, byte(v>>16+0x3c))
     b = append(b, tmp_v...)
 
   case v >= -2147483648 && v <= 2147483647: //四字节压缩
-    tmp_v, err = pack_int32(int32(v))
+    tmp_v, err = util.PackInt32(int32(v))
     b = append(b, 0x77)
     b = append(b, tmp_v...)
 
   default:
     b = append(b, 'L')
-    tmp_v, err = pack_int64(v)
+    tmp_v, err = util.PackInt64(v)
     b = append(b, tmp_v...)
   }
   
@@ -436,7 +436,7 @@ func encode_string(v string) (b []byte, err error) {
   )
 
   if r_len < 32 {
-    len_b, err = pack_int8(int8(r_len))
+    len_b, err = util.PackInt8(int8(r_len))
     b = append(b, len_b...)
     b = append(b, s_buf.Bytes()...)
     return
@@ -448,12 +448,12 @@ func encode_string(v string) (b []byte, err error) {
       break
     }
     if r_len > CHUNK_SIZE {
-      len_b, err = pack_uint16(uint16(CHUNK_SIZE))
+      len_b, err = util.PackUint16(uint16(CHUNK_SIZE))
       b = append(b, 's')
       b = append(b, len_b...)
       s_chunk(CHUNK_SIZE)
     } else {
-      len_b, err = pack_uint16(uint16(r_len))
+      len_b, err = util.PackUint16(uint16(r_len))
       b = append(b, 'S')
       b = append(b, len_b...)
       s_chunk(r_len)

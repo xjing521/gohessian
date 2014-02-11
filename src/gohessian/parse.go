@@ -8,6 +8,7 @@ import (
   //  "strings"
   "runtime"
   "time"
+  "util"
 )
 
 /*
@@ -84,7 +85,7 @@ func (h *Hessian) read_type() string {
   if h.peek_byte() != 't' {
     return ""
   }
-  t_len, _ := unpack_aint16(h.peek(5))
+  t_len, _ := util.UnpackAInt16(h.peek(5))
   t_name := h.next_rune(int(3 + t_len))
   return string(t_name)
 }
@@ -117,23 +118,23 @@ func (h *Hessian) Parse() (v interface{}, err error) {
     v = false
 
   case 'I': //int
-    if v, err = unpack_int32(h.next(4)); err != nil {
+    if v, err = util.UnpackInt32(h.next(4)); err != nil {
       panic(err)
     }
 
   case 'L': //long
-    if v, err = unpack_int64(h.next(8)); err != nil {
+    if v, err = util.UnpackInt64(h.next(8)); err != nil {
       panic(err)
     }
 
   case 'D': //double
-    if v, err = unpack_float64(h.next(8)); err != nil {
+    if v, err = util.UnpackFloat64(h.next(8)); err != nil {
       panic(err)
     }
 
   case 'd': //date
     var ms int64
-    if ms, err = unpack_int64(h.next(8)); err != nil {
+    if ms, err = util.UnpackInt64(h.next(8)); err != nil {
       panic(err)
     }
     v = time.Unix(ms/1000, ms%1000*10E5)
@@ -141,7 +142,7 @@ func (h *Hessian) Parse() (v interface{}, err error) {
   case 'S', 's', 'X', 'x': //string,xml
     var str_chunks []rune
     for { //避免递归读取 Chunks
-      len, _ := unpack_int16(h.next(2))
+      len, _ := util.UnpackInt16(h.next(2))
       str_chunks = append(str_chunks, h.next_rune(int(len))...)
       if t == 'S' || t == 'X' {
         break
@@ -155,7 +156,7 @@ func (h *Hessian) Parse() (v interface{}, err error) {
   case 'B', 'b': //binary
     var bin_chunks []byte //等同于 []uint8,在 反射判断类型的时候，会得到 []uint8
     for {                 //避免递归读取 Chunks
-      len, _ := unpack_int16(h.next(2))
+      len, _ := util.UnpackInt16(h.next(2))
       bin_chunks = append(bin_chunks, h.next(int(len))...)
       if t == 'B' {
         break
@@ -196,7 +197,7 @@ func (h *Hessian) Parse() (v interface{}, err error) {
     h.append_refs(&map_chunks)
 
   case 'R': //ref
-    if ref_idx, err := unpack_int32(h.next(4)); err == nil {
+    if ref_idx, err := util.UnpackInt32(h.next(4)); err == nil {
       v = &h.refs[ref_idx]
     }
 

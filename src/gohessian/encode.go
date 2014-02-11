@@ -1,6 +1,7 @@
 package gohessian
 
 import (
+  "util"
   "bytes"
   "log"
   "runtime"
@@ -38,39 +39,58 @@ func Encode(v interface{}) (b []byte, err error) {
   switch v.(type) {
 
   case []byte:
+    log.Println("[]BYTE")
     b, err = encode_binary(v.([]byte))
 
   case bool:
+    log.Println("BOOL")
     b, err = encode_bool(v.(bool))
 
   case time.Time:
+    log.Println("TIME.TIME")
     b, err = encode_time(v.(time.Time))
 
   case float64:
+    log.Println("IFLOAT64")
     b, err = encode_float64(v.(float64))
 
+  case int:
+    log.Println("INT")
+    if v.(int) >= -2147483648 && v.(int) <= 2147483647 {
+      b, err = encode_int32(int32(v.(int)))
+    } else {
+      b, err = encode_int64(int64(v.(int)))
+    }
+
   case int32:
+    log.Println("INT32")
     b, err = encode_int32(v.(int32))
 
   case int64:
+    log.Println("INT64")
     b, err = encode_int64(v.(int64))
 
   case string:
+    log.Println("STRING")
     b, err = encode_string(v.(string))
 
   case nil:
+    log.Println("NIL")
     b, err = encode_null(v)
 
   case []Any:
+    log.Println("LIST")
     b, err = encode_list(v.([]Any))
 
   case map[Any]Any:
+    log.Println("MAP")
     b, err = encode_map(v.(map[Any]Any))
 
   default:
     panic("unknow type")
   }
-  log.Printf(">>>>encode bytes: %v", b)
+
+  log.Println(util.SprintHex(b))
   return
 }
 
@@ -87,7 +107,10 @@ func encode_binary(v []byte) (b []byte, err error) {
   )
 
   if len(v) == 0 {
-    len_b, err = pack_uint16(0)
+    if len_b, err = util.PackUint16(0); err != nil {
+      b = nil
+      return
+    }
     b = append(b, 'B')
     b = append(b, len_b...)
     return
@@ -98,11 +121,17 @@ func encode_binary(v []byte) (b []byte, err error) {
   for r_buf.Len() > 0 {
     if r_buf.Len() > CHUNK_SIZE {
       tag = 'b'
-      len_b, err = pack_uint16(uint16(CHUNK_SIZE))
+      if len_b, err = util.PackUint16(uint16(CHUNK_SIZE)); err != nil {
+        b = nil
+        return
+      }
       len_n = CHUNK_SIZE
     } else {
       tag = 'B'
-      len_b, err = pack_uint16(uint16(r_buf.Len()))
+      if len_b, err = util.PackUint16(uint16(r_buf.Len())); err != nil {
+        b = nil
+        return
+      }
       len_n = r_buf.Len()
     }
     b = append(b, tag)
@@ -124,8 +153,12 @@ func encode_bool(v bool) (b []byte, err error) {
 
 // date
 func encode_time(v time.Time) (b []byte, err error) {
+  var tmp_v []byte
   b = append(b, 'd')
-  tmp_v, err := pack_int64(v.UnixNano() / 1000000)
+  if tmp_v, err = util.PackInt64(v.UnixNano() / 1000000); err != nil {
+    b = nil
+    return
+  }
   b = append(b, tmp_v...)
   return
 }
@@ -133,8 +166,11 @@ func encode_time(v time.Time) (b []byte, err error) {
 // double
 func encode_float64(v float64) (b []byte, err error) {
   var tmp_v []byte
+  if tmp_v, err = util.PackFloat64(v); err != nil {
+    b = nil
+    return
+  }
   b = append(b, 'D')
-  tmp_v, err = pack_float64(v)
   b = append(b, tmp_v...)
   return
 }
@@ -142,8 +178,11 @@ func encode_float64(v float64) (b []byte, err error) {
 // int
 func encode_int32(v int32) (b []byte, err error) {
   var tmp_v []byte
+  if tmp_v, err = util.PackInt32(v); err != nil {
+    b = nil
+    return
+  }
   b = append(b, 'I')
-  tmp_v, err = pack_int32(v)
   b = append(b, tmp_v...)
   return
 }
@@ -151,8 +190,11 @@ func encode_int32(v int32) (b []byte, err error) {
 // long
 func encode_int64(v int64) (b []byte, err error) {
   var tmp_v []byte
+  if tmp_v, err = util.PackInt64(v); err != nil {
+    b = nil
+    return
+  }
   b = append(b, 'L')
-  tmp_v, err = pack_int64(v)
   b = append(b, tmp_v...)
   return
 
@@ -181,7 +223,10 @@ func encode_string(v string) (b []byte, err error) {
   )
 
   if v == "" {
-    len_b, err = pack_uint16(uint16(r_len))
+    if len_b, err = util.PackUint16(uint16(r_len)); err != nil {
+      b = nil
+      return
+    }
     b = append(b, 'S')
     b = append(b, len_b...)
     b = append(b, []byte{}...)
@@ -194,12 +239,18 @@ func encode_string(v string) (b []byte, err error) {
       break
     }
     if r_len > CHUNK_SIZE {
-      len_b, err = pack_uint16(uint16(CHUNK_SIZE))
+      if len_b, err = util.PackUint16(uint16(CHUNK_SIZE)); err != nil {
+        b = nil
+        return
+      }
       b = append(b, 's')
       b = append(b, len_b...)
       s_chunk(CHUNK_SIZE)
     } else {
-      len_b, err = pack_uint16(uint16(r_len))
+      if len_b, err = util.PackUint16(uint16(r_len)); err != nil {
+        b = nil
+        return
+      }
       b = append(b, 'S')
       b = append(b, len_b...)
       s_chunk(r_len)
@@ -218,12 +269,18 @@ func encode_list(v []Any) (b []byte, err error) {
 
   b = append(b, 'V')
   if list_len > 0 {
-    len_b, err = pack_int32(int32(list_len))
+    if len_b, err = util.PackInt32(int32(list_len)); err != nil {
+      b = nil
+      return
+    }
     b = append(b, 'l')
     b = append(b, len_b...)
   }
   for _, a := range v {
-    tmp_v, err = Encode(a)
+    if tmp_v, err = Encode(a); err != nil {
+      b = nil
+      return
+    }
     b = append(b, tmp_v...)
   }
   b = append(b, 'z')
@@ -232,15 +289,20 @@ func encode_list(v []Any) (b []byte, err error) {
 
 // map
 func encode_map(v map[Any]Any) (b []byte, err error) {
-  // map_len := len(v)
   var (
     tmp_k []byte
     tmp_v []byte
   )
   b = append(b, 'M')
   for k, v := range v {
-    tmp_k, err = Encode(k)
-    tmp_v, err = Encode(v)
+    if tmp_k, err = Encode(k); err != nil {
+      b = nil
+      return
+    }
+    if tmp_v, err = Encode(v); err != nil {
+      b = nil
+      return
+    }
     b = append(b, tmp_k...)
     b = append(b, tmp_v...)
   }
