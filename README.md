@@ -1,1 +1,1 @@
-# go语言实现的 hessian 读写库
+# gohessian implements  Hessian  Protocol by golang
