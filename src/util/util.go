@@ -81,14 +81,7 @@ func UnpackInt16(b []byte) (pi int16, err error) {
   return
 }
 
-//unpack('an')
-func UnpackAInt16(b []byte) (pi int16, err error) {
-  err = binary.Read(bytes.NewReader(b[1:3]), binary.BigEndian, &pi)
-  if err != nil {
-    return
-  }
-  return
-}
+
 
 //(0,4).unpack('N')
 func UnpackInt32(b []byte) (pi int32, err error) {

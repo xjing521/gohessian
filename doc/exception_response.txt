@@ -1,0 +1,96 @@
+r \x01\x00
+-----------------------------------------------
+f
+S \x00\x04  code
+S \x00\x10  ServiceException
+S \x00\a    message
+S \x00\xB0  Uncompilable source code - thorwException() in example.DataTypeImpl cannot implement thorwException() in example.DataType\n  overridden method does not throw java.lang.Exception
+S \x00\x06  detail
+-----------------------------------------------
+M
+t \x00\x1A  java.lang.RuntimeException
+
+S \x00\r    detailMessage
+S \x00\xB0  Uncompilable source code - thorwException() in example.DataTypeImpl cannot implement thorwException() in example.DataType\n  overridden method does not throw java.lang.Exception
+
+S \x00\x05  cause
+R \x00\x00\x00\x00
+
+S \x00\n    stackTrace
+-----------------------------------------------
+V
+t \x00\x1C  [java.lang.StackTraceElement
+l \x00\x00\x00\x14 ; list len is 20
+-----------------------------------------------
+M
+t \x00\e    java.lang.StackTraceElement
+S \x00\x0E  declaringClass
+S \x00\x14  example.DataTypeImpl
+S \x00\n    methodName
+S \x00\x0E  thorwException
+S \x00\b    fileName
+S \x00\x11  DataTypeImpl.java
+S \x00\n    lineNumber
+I \x00\x00\x00A
+z
+-----------------------------------------------
+M
+t \x00\e    java.lang.StackTraceElement
+S \x00\x0E  declaringClass
+S \x00%     sun.reflect.GeneratedMethodAccessor43
+S \x00\n    methodName
+S \x00\x06  invoke
+S \x00\b    fileName
+N
+S \x00\n    lineNumber
+I \xFF\xFF\xFF\xFF
+z
+-----------------------------------------------
+M
+t \x00\e    java.lang.StackTraceElement
+S \x00\x0E  declaringClass
+S \x00(     sun.reflect.DelegatingMethodAccessorImpl
+S \x00\n    methodName
+S \x00\x06  invoke
+S \x00\b    fileName
+S \x00!     DelegatingMethodAccessorImpl.java
+S \x00\n    lineNumber
+I \x00\x00\x00+
+z
+-----------------------------------------------
+M
+t \x00\e     java.lang.StackTraceElement
+S \x00\x0E   declaringClass
+S \x00\x18   java.lang.reflect.Method
+S \x00\n     methodName
+S \x00\x06   invoke
+S \x00\b     fileName
+S \x00\v     Method.java
+S \x00\n     lineNumber
+I \x00\x00\x02^
+z
+-----------------------------------------------
+M
+t \x00\e     java.lang.StackTraceElement
+S \x00\x0E   declaringClass
+S \x00)      com.caucho.hessian.server.HessianSkeleton
+S \x00\n     methodName
+S \x00\x06   invoke
+S \x00\b     fileName
+S \x00\x14   HessianSkeleton.java
+S \x00\n     lineNumber
+I \x00\x00\x01.
+z
+-----------------------------------------------
+-----------------------------------------------
+................
+M
+t \x00\e      java.lang.StackTraceElement
+S \x00\x0E    declaringClass
+S \x00)       com.caucho.hessian.server.HessianSkeleton
+S \x00\n      methodName
+S \x00\x06invokeS\x00\bfileNameS\x00\x14HessianSkeleton.javaS\x00\nlineNumberI\x00\x00\x00\xC6zMt\x00\ejava.lang.StackTraceElementS\x00\x0EdeclaringClassS\x00(com.caucho.hessian.server.HessianServletS\x00\nmethodNameS\x00\x06invokeS\x00\bfileNameS\x00\x13HessianServlet.javaS\x00\nlineNumberI\x00\x00\x01\x8FzMt\x00\ejava.lang.StackTraceElementS\x00\x0EdeclaringClassS\x00(com.caucho.hessian.server.HessianServletS\x00\nmethodNameS\x00\aserviceS\x00\bfileNameS\x00\x13HessianServlet.javaS\x00\nlineNumberI\x00\x00\x01{zMt\x00\ejava.lang.StackTraceElementS\x00\x0EdeclaringClassS\x00/org.apache.catalina.core.ApplicationFilterChainS\x00\nmethodNameS\x00\x10internalDoFilterS\x00\bfileNameS\x00\eApplicationFilterChain.javaS\x00\nlineNumberI\x00\x00\x01"zMt\x00\ejava.lang.StackTraceElementS\x00\x0EdeclaringClassS\x00/org.apache.catalina.core.ApplicationFilterChainS\x00\nmethodNameS\x00\bdoFilterS\x00\bfileNameS\x00\eApplicationFilterChain.javaS\x00\nlineNumberI\x00\x00\x00\xCEzMt\x00\ejava.lang.StackTraceElementS\x00\x0EdeclaringClassS\x00-org.apache.catalina.core.StandardWrapperValveS\x00\nmethodNameS\x00\x06invokeS\x00\bfileNameS\x00\x19StandardWrapperValve.javaS\x00\nlineNumberI\x00\x00\x00\xE9zMt\x00\ejava.lang.StackTraceElementS\x00\x0EdeclaringClassS\x00-org.apache.catalina.core.StandardContextValveS\x00\nmethodNameS\x00\x06invokeS\x00\bfileNameS\x00\x19StandardContextValve.javaS\x00\nlineNumberI\x00\x00\x00\xBFzMt\x00\ejava.lang.StackTraceElementS\x00\x0EdeclaringClassS\x00*org.apache.catalina.core.StandardHostValveS\x00\nmethodNameS\x00\x06invokeS\x00\bfileNameS\x00\x16StandardHostValve.javaS\x00\nlineNumberI\x00\x00\x00\x7FzMt\x00\ejava.lang.StackTraceElementS\x00\x0EdeclaringClassS\x00+org.apache.catalina.valves.ErrorReportValveS\x00\nmethodNameS\x00\x06invokeS\x00\bfileNameS\x00\x15ErrorReportValve.javaS\x00\nlineNumberI\x00\x00\x00gzMt\x00\ejava.lang.StackTraceElementS\x00\x0EdeclaringClassS\x00,org.apache.catalina.core.StandardEngineValveS\x00\nmethodNameS\x00\x06invokeS\x00\bfileNameS\x00\x18StandardEngineValve.javaS\x00\nlineNumberI\x00\x00\x00mzMt\x00\ejava.lang.StackTraceElementS\x00\x0EdeclaringClassS\x00+org.apache.catalina.connector.CoyoteAdapterS\x00\nmethodNameS\x00\aserviceS\x00\bfileNameS\x00\x12CoyoteAdapter.javaS\x00\nlineNumberI\x00\x00\x01%zMt\x00\ejava.lang.StackTraceElementS\x00\x0EdeclaringClassS\x00(org.apache.coyote.http11.Http11ProcessorS\x00\nmethodNameS\x00\aprocessS\x00\bfileNameS\x00\x14Http11Processor.javaS\x00\nlineNumberI\x00\x00\x03]zMt\x00\ejava.lang.StackTraceElementS\x00\x0EdeclaringClassS\x00?org.apache.coyote.http11.Http11Protocol$Http11ConnectionHandlerS\x00\nmethodNameS\x00\aprocessS\x00\bfileNameS\x00\x13Http11Protocol.javaS\x00\nlineNumberI\x00\x00\x02^zMt\x00\ejava.lang.StackTraceElementS\x00\x0EdeclaringClassS\x00-org.apache.tomcat.util.net.JIoEndpoint$WorkerS\x00\nmethodNameS\x00\x03runS\x00\bfileNameS\x00\x10JIoEndpoint.javaS\x00\nlineNumberI\x00\x00\x01\xE9zMt\x00\ejava.lang.StackTraceElementS\x00\x0EdeclaringClassS\x00\x10java.lang.ThreadS\x00\nmethodNameS\x00\x03runS\x00\bfileNameS\x00\vThread.javaS\x00\nlineNumberI\x00\x00\x02\xE8zzS\x00\x14suppressedExceptionsVt\x00&java.util.Collections$UnmodifiableListl\x00\x00\x00\x00z
+-----------------------------------------------
+z;  V list
+z;  M map
+z;  Hessian end

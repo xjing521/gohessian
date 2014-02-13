@@ -1,12 +1,12 @@
 package gohessian
 
 import (
-  "util"
   "bytes"
   "log"
   "runtime"
   "time"
   "unicode/utf8"
+  "util"
 )
 
 /*
@@ -26,12 +26,15 @@ type Encoder struct {
 }
 
 const (
-  CHUNK_SIZE = 0x8000
+  CHUNK_SIZE    = 0x8000
+  ENCODER_DEBUG = false
 )
 
 func init() {
   _, filename, _, _ := runtime.Caller(1)
-  log.SetPrefix(filename + "\n")
+  if ENCODER_DEBUG {
+    log.SetPrefix(filename + "\n")
+  }
 }
 
 func Encode(v interface{}) (b []byte, err error) {
@@ -39,23 +42,18 @@ func Encode(v interface{}) (b []byte, err error) {
   switch v.(type) {
 
   case []byte:
-    log.Println("[]BYTE")
     b, err = encode_binary(v.([]byte))
 
   case bool:
-    log.Println("BOOL")
     b, err = encode_bool(v.(bool))
 
   case time.Time:
-    log.Println("TIME.TIME")
     b, err = encode_time(v.(time.Time))
 
   case float64:
-    log.Println("IFLOAT64")
     b, err = encode_float64(v.(float64))
 
   case int:
-    log.Println("INT")
     if v.(int) >= -2147483648 && v.(int) <= 2147483647 {
       b, err = encode_int32(int32(v.(int)))
     } else {
@@ -63,34 +61,29 @@ func Encode(v interface{}) (b []byte, err error) {
     }
 
   case int32:
-    log.Println("INT32")
     b, err = encode_int32(v.(int32))
 
   case int64:
-    log.Println("INT64")
     b, err = encode_int64(v.(int64))
 
   case string:
-    log.Println("STRING")
     b, err = encode_string(v.(string))
 
   case nil:
-    log.Println("NIL")
     b, err = encode_null(v)
 
   case []Any:
-    log.Println("LIST")
     b, err = encode_list(v.([]Any))
 
   case map[Any]Any:
-    log.Println("MAP")
     b, err = encode_map(v.(map[Any]Any))
 
   default:
     panic("unknow type")
   }
-
-  log.Println(util.SprintHex(b))
+  if ENCODER_DEBUG {
+    log.Println(util.SprintHex(b))
+  }
   return
 }
 
@@ -268,14 +261,14 @@ func encode_list(v []Any) (b []byte, err error) {
   )
 
   b = append(b, 'V')
-  if list_len > 0 {
-    if len_b, err = util.PackInt32(int32(list_len)); err != nil {
-      b = nil
-      return
-    }
-    b = append(b, 'l')
-    b = append(b, len_b...)
+
+  if len_b, err = util.PackInt32(int32(list_len)); err != nil {
+    b = nil
+    return
   }
+  b = append(b, 'l')
+  b = append(b, len_b...)
+
   for _, a := range v {
     if tmp_v, err = Encode(a); err != nil {
       b = nil

@@ -8,6 +8,7 @@ import (
   "time"
   "runtime"
 )
+//GOPATH=/Users/weidewang/ownCloud/Workspace/go/gohessian go test -run=Test_*
 
 var data *bytes.Buffer
 var REPLY []byte = []byte{114, 1, 0}
